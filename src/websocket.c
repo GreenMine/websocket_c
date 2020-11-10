@@ -47,7 +47,7 @@ const char* header = "GET ws://localhost/ HTTP/1.1\r\nHost: localhost\r\nConnect
 	//0000 1000 1000 0000
 	//					FRSV|OP| MASK|PAYLOAD LENGTH
 	size_t length;
-	char* message = generate_message_frame("Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE ", &length);
+	char* message = generate_message_frame("Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE", &length);
 	printf("Length: %ld\n", length);
 	send(sockfd, message, length, 0);
 
