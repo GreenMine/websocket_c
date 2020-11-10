@@ -47,8 +47,13 @@ const char* header = "GET ws://localhost/ HTTP/1.1\r\nHost: localhost\r\nConnect
 	//0000 1000 1000 0000
 	//					FRSV|OP| MASK|PAYLOAD LENGTH
 	size_t length;
-	char* message = generate_message_frame("Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE", &length);
+	char* message = generate_message_frame("Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE Fuck OFFF DUDE", &length, true);
 	printf("Length: %ld\n", length);
+	printf("Data: [");
+	for(int i = 0; i < length; i++) {
+		printf("%u, ", (uint8_t)message[i]);
+	}
+	printf("]\n");
 	send(sockfd, message, length, 0);
 
 	//Reading frames
@@ -59,7 +64,24 @@ const char* header = "GET ws://localhost/ HTTP/1.1\r\nHost: localhost\r\nConnect
 		switch(first_byte & 0xF) {
 			case TEXT_MESSAGE:
 				msg_len = buffer[1];
-				printf("Response(%dc.): %.*s\n", msg_len, msg_len, buffer + 2);
+				if(msg_len <= 125) {
+					printf("Response(%dc.): %.*s\n", msg_len, msg_len, buffer + 2);
+				} else {
+					size_t need_read;
+					if(msg_len == 126) {
+						reverse_array(buffer + 2, 2);
+						need_read = *(uint16_t*)(buffer + 2);
+					} else {
+						reverse_array(buffer + 2, 8);
+						need_read = *(uint64_t*)(buffer + 2);
+					}
+					char mr_buffer[need_read];// Maybe too much
+					while(need_read > 0) {
+						size_t readed = read(sockfd, mr_buffer, need_read);
+						printf("Readed: %ld\n", readed);
+						need_read -= readed;
+					}
+				}
 				if(buffer[2] == '6') {
 					//Close the connection
 					//0000 1000 1000 0000
