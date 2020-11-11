@@ -8,6 +8,7 @@
 
 #include "types.h"
 #include "helper.h"
+#include "mask.h"
 
 #define HEADER_BUFFER_SIZE 512
 #define MESSAGE_BUFFER_SIZE 128
@@ -55,6 +56,17 @@ const char* header = "GET ws://localhost/ HTTP/1.1\r\nHost: localhost\r\nConnect
 	}
 	printf("]\n");
 	send(sockfd, message, length, 0);
+
+	printf("/// MASK TEST ///\n");
+	char str[] = {'H', 'e', 'l', 'l', 'o', '\0'};
+	uint32_t key = 0x37fa213d;
+	reverse_array(&key, 4);//cuz i have a little-endian system
+	printf("Result of masking %s is: ", str);
+	mask_string(str, key);
+	for(int i = 0; i < strlen(str); i++)
+		printf("0x%X ", (uint8_t)str[i]);
+	putchar('\n');
+	printf("/// END MASK TEST ///\n");
 
 	//Reading frames
 	char buffer[MESSAGE_BUFFER_SIZE];

@@ -31,10 +31,11 @@ char* generate_message_frame(const char* message, size_t* length, bool mask) {
 	return return_message;
 }
 
-void reverse_array(char* array, size_t length) {
+void reverse_array(void* array, size_t length) {
+	uint8_t* ptr = (uint8_t*)array;
 	for(int i = 0; i < length / 2; i++) {
-		char temp = array[i];
-		array[i] = array[length-i-1];
-		array[length-i-1] = temp;
+		uint8_t temp = ptr[i];
+		ptr[i] = ptr[length-i-1];
+		ptr[length-i-1] = temp;
 	}
 }
