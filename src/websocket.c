@@ -14,7 +14,7 @@
 #include "websocket.h"
 
 #define HEADER_BUFFER_SIZE 512
-#define MESSAGE_BUFFER_SIZE 128
+#define MESSAGE_BUFFER_SIZE 132
 
 typedef struct addrinfo addrinfo_t;
 int main(int argc, char *args[]) {
@@ -51,7 +51,7 @@ const char* header = "GET ws://localhost/ HTTP/1.1\r\nHost: localhost\r\nConnect
 	//0000 1000 1000 0000
 	//					FRSV|OP| MASK|PAYLOAD LENGTH
 	size_t length;
-	char* message = generate_message_frame("Hello", &length, true);
+	char* message = generate_message_frame("Something", &length, true);
 	printf("Length: %ld\n", length);
 	printf("Data: [");
 	for(int i = 0; i < length; i++) {
@@ -61,39 +61,46 @@ const char* header = "GET ws://localhost/ HTTP/1.1\r\nHost: localhost\r\nConnect
 	send(sockfd, message, length, 0);
 
 	//Reading frames
-	char buffer[MESSAGE_BUFFER_SIZE];
+	char *buffer = alloca(MESSAGE_BUFFER_SIZE);
 	while(read(sockfd, buffer, MESSAGE_BUFFER_SIZE) != 0) {
 		uint8_t first_byte = buffer[0] - '0';
-		int msg_len;
+		size_t msg_len;
 		switch(first_byte & 0xF) {
 			case TEXT_MESSAGE:
-				msg_len = buffer[1];
-				if(msg_len <= 125) {
-					printf("Response(%dc.): %.*s\n", msg_len, msg_len, buffer + 2);
-				} else {
+				msg_len = buffer[1] & 0x7F;
+				size_t msg_offset = 2;
+
+				if(buffer[1] & 0x80) msg_offset += 4;
+				if(msg_len > 125) {
 					size_t need_read;
 					if(msg_len == 126) {
 						reverse_array(buffer + 2, 2);
 						need_read = *(uint16_t*)(buffer + 2);
+						msg_offset += 2;
 					} else {
 						reverse_array(buffer + 2, 8);
 						need_read = *(uint64_t*)(buffer + 2);
+						msg_offset += 8;
 					}
-					char mr_buffer[need_read];// Maybe too much
-					while(need_read > 0) {
-						size_t readed = read(sockfd, mr_buffer, need_read);
-						printf("Readed: %ld\n", readed);
-						need_read -= readed;
+
+					size_t s_readed = MESSAGE_BUFFER_SIZE - msg_offset;
+					char *big_msg = malloc(MESSAGE_BUFFER_SIZE + need_read);
+					memcpy(big_msg, buffer, MESSAGE_BUFFER_SIZE);
+					while(s_readed < need_read) {
+						size_t readed = read(sockfd, big_msg + s_readed, need_read - s_readed);
+						printf("Readed %ld/%ld, must readed: %ld, but %ld\n", s_readed, need_read, need_read - s_readed, readed);
+						s_readed += readed;
 					}
+					buffer = big_msg;
+					msg_len = need_read;
 				}
-				if(buffer[2] == '6') {
-					//Close the connection
-					//0000 1000 1000 0000
-					//							  FRSV|OP| MASK|PAYLOAD LENGTH
-					uint8_t control_frame[6] = {0b10001000, 0b10000000, 0, 0, 0, 0};
-					send(sockfd, control_frame, 6, 0);
-				}
-				memset(buffer, 0, msg_len);
+
+				printf("Response(%dc.): %.*s\n", msg_len, msg_len, buffer + msg_offset);
+//					//Close the connection
+//					//0000 1000 1000 0000
+//					//							  FRSV|OP| MASK|PAYLOAD LENGTH
+//					uint8_t control_frame[6] = {0b10001000, 0b10000000, 0, 0, 0, 0};
+//					send(sockfd, control_frame, 6, 0);
 			break;
 			case BINARY_MESSAGE:
 				printf("Umimplemented binary data!\n");
@@ -111,7 +118,7 @@ const char* header = "GET ws://localhost/ HTTP/1.1\r\nHost: localhost\r\nConnect
 				printf("Pong!\n");
 			break;
 			default:
-				printf("Not implemented frame! %s\n", buffer);
+				printf("Not implemented frame! %s.\n", buffer);
 			break;
 		}
 	}

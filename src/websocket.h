@@ -36,7 +36,7 @@ char* generate_message_frame(const char* message, size_t* length, bool mask) {
 
 	memcpy(return_message + msg_offset, message, message_length);
 	if(mask) {
-		uint32_t mask = 0x37fa213d;//TODO:About random - Randomness Requirements for Security RFC4086(https://tools.ietf.org/html/rfc4086)
+		uint32_t mask = 0x37fa213d;//TODO: About random - Randomness Requirements for Security RFC4086(https://tools.ietf.org/html/rfc4086)
 		reverse_array(&mask, sizeof(mask));
 
 		mask_string(return_message + msg_offset, mask);
