@@ -4,46 +4,68 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-//TODO: Change sockfd to ws struct
-void ws_send_message(int sockfd, const char* message) {
+#include "generator.h"
 
+#define HEADER_BUFFER_SIZE 256
+
+typedef struct addrinfo addrinfo_t;
+int ws_connect(const char* ip, const char* port) {
+	addrinfo_t hint, *res;
+	memset(&hint, 0, sizeof(hint));
+	hint.ai_family = AF_INET;
+	hint.ai_socktype = SOCK_STREAM;
+
+	getaddrinfo(ip, port, &hint, &res);
+
+	int sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	printf("Try to connect...\n");
+	if(connect(sockfd, res->ai_addr, res->ai_addrlen) == -1) {
+		printf("Error connect to server!\n");
+		return -1;
+	}
+	printf("Success connected!\n");
+	//Send handshake request
+	char header[256];
+	int strlen = sprintf(header, "GET ws://%s:%s/ HTTP/1.1\r\nHost: %s\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: ZMOruJy3LW4qZvJEP55dBg==\r\n\r\n", ip, port, ip);//TODO: Make dynamic WebSocket key generator
+	if(send(sockfd, header, strlen, 0) != strlen) {
+		printf("Sended bytes not equal own message!\n");
+		return -1;
+	}
+	printf("Success sended!\n");
+
+	//Read hendshake response
+	char header_res[HEADER_BUFFER_SIZE];
+	memset(header_res, 0, HEADER_BUFFER_SIZE);
+	read(sockfd, header_res, HEADER_BUFFER_SIZE);
+	printf("Connection output: %s\n", header_res);
+
+	return sockfd;
 }
 
-char* generate_message_frame(const char* message, size_t* length, bool mask) {
-	size_t message_length = strlen(message);
-	//FRSV|OP| MASK|PAYLOAD LENGTH
-	char *return_message = malloc(message_length + 14);
-	return_message[0] = 0b10000001;
+void ws_close(int wsfd, const char* message) {
+	//Close the connection
+	//0000 1000 1000 0000
+	//							  FRSV|OP| MASK|PAYLOAD LENGTH
+	uint8_t control_frame[6] = {0b10001000, 0b10000000, 0, 0, 0, 0};
+	send(wsfd, control_frame, 6, 0);
+}
 
-	size_t msg_offset = 2;//FIN, RSV, OPCODE, MASK and LENGTH
-	if(mask) msg_offset += 4;
-	//GET MESSAGE LENGTH
-	if(message_length > 125) {
-		if(message_length > 65535) {
-			return_message[1] = 127;
-			*(uint64_t*)(return_message + 2) = message_length;
-			msg_offset += 8;
-		} else {
-			return_message[1] = 126;
-			*(uint16_t*)(return_message + 2) = message_length;
-			msg_offset += 2;
-		}
-	} else {
-		return_message[1] = message_length;
+void ws_and_sock_close(int wsfd) {
+	ws_close(wsfd, "");
+	shutdown(wsfd, SHUT_RDWR);
+	close(wsfd);
+}
+
+//TODO: Change sockfd to ws struct
+void ws_send_message(int wsfd, const char* message) {
+	size_t length;
+	char* msg = generate_message_frame(message, &length, true);
+	printf("Length: %ld\n", length);
+	printf("Data of sended message: [");
+	for(int i = 0; i < length; i++) {
+		printf("0x%X, ", (uint8_t)message[i]);
 	}
-	//ADD MASK BIT
-	return_message[1] |= (mask << 7);
-
-	memcpy(return_message + msg_offset, message, message_length);
-	if(mask) {
-		uint32_t mask = 0x37fa213d;//TODO: About random - Randomness Requirements for Security RFC4086(https://tools.ietf.org/html/rfc4086)
-		reverse_array(&mask, sizeof(mask));
-
-		mask_string(return_message + msg_offset, mask);
-		*(uint32_t*)&return_message[msg_offset - 4] = mask;
-	}
-
-	*length = message_length + msg_offset;
-	return return_message;
+	printf("]\n");
+	send(wsfd, msg, length, 0);
 }
 #endif
