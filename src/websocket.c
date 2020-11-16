@@ -49,13 +49,15 @@ int main(int argc, char *args[]) {
 						msg_offset += 8;
 					}
 
-					size_t s_readed = MESSAGE_BUFFER_SIZE - msg_offset;
-					char *big_msg = malloc(MESSAGE_BUFFER_SIZE + need_read);
+					printf("Need read: %ld, offset: %ld\n", need_read, msg_offset);
+					size_t n = need_read + msg_offset;
+					char *big_msg = malloc(n);
 					memcpy(big_msg, buffer, MESSAGE_BUFFER_SIZE);
-					while(s_readed < need_read) {
-						size_t readed = read(wsfd, big_msg + s_readed, need_read - s_readed);
-						printf("Readed %ld/%ld, must readed: %ld, but %ld\n", s_readed, need_read, need_read - s_readed, readed);
+					size_t s_readed = MESSAGE_BUFFER_SIZE;
+					while(s_readed < n) {
+						size_t readed = read(wsfd, big_msg + s_readed, n - s_readed);
 						s_readed += readed;
+						printf("Readed: %ld/%ld\n", s_readed, n);
 					}
 					buffer = big_msg;
 					msg_len = need_read;

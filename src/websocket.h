@@ -63,7 +63,7 @@ void ws_send_message(int wsfd, const char* message) {
 	printf("Length: %ld\n", length);
 	printf("Data of sended message: [");
 	for(int i = 0; i < length; i++) {
-		printf("0x%X, ", (uint8_t)message[i]);
+		printf("0x%X, ", (uint8_t)msg[i]);
 	}
 	printf("]\n");
 	send(wsfd, msg, length, 0);
