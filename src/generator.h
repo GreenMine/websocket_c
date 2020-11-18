@@ -14,10 +14,12 @@ char* generate_message_frame(const char* message, size_t* length, bool mask) {
 			return_message[1] = 127;
 			*(uint64_t*)(return_message + 2) = message_length;
 			msg_offset += 8;
+			reverse_array(return_message + 2, 8);
 		} else {
 			return_message[1] = 126;
 			*(uint16_t*)(return_message + 2) = message_length;
 			msg_offset += 2;
+			reverse_array(return_message + 2, 2);
 		}
 	} else {
 		return_message[1] = message_length;

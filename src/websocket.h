@@ -66,6 +66,6 @@ void ws_send_message(int wsfd, const char* message) {
 		printf("0x%X, ", (uint8_t)msg[i]);
 	}
 	printf("]\n");
-	send(wsfd, msg, length, 0);
+	printf("SEND??? %ld\n", send(wsfd, msg, length, 0));
 }
 #endif

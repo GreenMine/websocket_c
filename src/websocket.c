@@ -24,8 +24,7 @@ int main(int argc, char *args[]) {
 		return -1;
 	}
 
-	ws_send_message(wsfd, "Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Loresum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum");
-
+	ws_send_message(wsfd, "Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum ");
 	//Reading frames
 	char *buffer = alloca(MESSAGE_BUFFER_SIZE);
 	while(read(wsfd, buffer, MESSAGE_BUFFER_SIZE) != 0) {
