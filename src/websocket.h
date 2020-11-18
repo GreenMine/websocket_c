@@ -59,13 +59,26 @@ void ws_and_sock_close(int wsfd) {
 //TODO: Change sockfd to ws struct
 void ws_send_message(int wsfd, const char* message) {
 	size_t length;
-	char* msg = generate_message_frame(message, &length, true);
-	printf("Length: %ld\n", length);
-	printf("Data of sended message: [");
-	for(int i = 0; i < length; i++) {
-		printf("0x%X, ", (uint8_t)msg[i]);
-	}
-	printf("]\n");
-	printf("SEND??? %ld\n", send(wsfd, msg, length, 0));
+
+	uint8_t* msg = generate_data_frame(TEXT_MESSAGE, (uint8_t*)message, strlen(message), &length, true);
+//	printf("Length: %ld\n", length);
+//	printf("Data of sended message: [");
+//	for(int i = 0; i < length; i++) {
+//		printf("0x%X, ", (uint8_t)msg[i]);
+//	}
+//	printf("]\n");
+	send(wsfd, msg, length, 0);
+
+	free(msg);
+}
+
+void ws_send_binary(int wsfd, uint8_t* data, size_t len) {
+	size_t length;
+
+	reverse_array(data, len);
+	uint8_t* send_data = generate_data_frame(BINARY_MESSAGE, data, len, &length, true);
+	send(wsfd, send_data, length, 0);
+
+	free(send_data);
 }
 #endif

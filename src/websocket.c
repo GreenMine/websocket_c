@@ -20,7 +20,7 @@ int main(int argc, char *args[]) {
 	int wsfd;
 
 	if((wsfd = ws_connect("localhost", "80")) == -1) {
-		printf("Something went wrong...\n");
+		printf("Error occured. Exiting...\n");
 		return -1;
 	}
 
@@ -50,7 +50,7 @@ int main(int argc, char *args[]) {
 
 					printf("Need read: %ld, offset: %ld\n", need_read, msg_offset);
 					size_t n = need_read + msg_offset;
-					char *big_msg = malloc(n);
+					char *big_msg = malloc(n);//FIXME: FREE?
 					memcpy(big_msg, buffer, MESSAGE_BUFFER_SIZE);
 					size_t s_readed = MESSAGE_BUFFER_SIZE;
 					while(s_readed < n) {
