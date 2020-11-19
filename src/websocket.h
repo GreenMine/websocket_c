@@ -8,9 +8,10 @@
 
 #define HEADER_BUFFER_SIZE 256
 
-typedef struct addrinfo addrinfo_t;
-int ws_connect(const char* ip, const char* port) {
-	addrinfo_t hint, *res;
+void *read_data(void* params);
+
+int ws_connect(websocket_t* websocket, const char* ip, const char* port) {
+	struct addrinfo hint, *res;
 	memset(&hint, 0, sizeof(hint));
 	hint.ai_family = AF_INET;
 	hint.ai_socktype = SOCK_STREAM;
@@ -39,25 +40,45 @@ int ws_connect(const char* ip, const char* port) {
 	read(sockfd, header_res, HEADER_BUFFER_SIZE);
 	printf("Connection output: %s\n", header_res);
 
-	return sockfd;
+	websocket->fd = sockfd;
+	websocket->connection = CONNECTED;
+
+	//Thread to read messages
+	pthread_t tid;
+	pthread_create(&tid, NULL, read_data, websocket);
+
+	return 0;
 }
 
-void ws_close(int wsfd, const char* message) {
+void ws_hook_event(websocket_t* websocket, uint8_t event, void (*f)(char*)) {
+	switch(event) {
+		case NEW_MESSAGE:
+			websocket->new_message_hook = f;
+			break;
+		case CLOSE:
+			websocket->close_hook = f;
+			break;
+	}
+}
+
+void ws_close(websocket_t* websocket, const char* message) {
 	//Close the connection
 	//0000 1000 1000 0000
 	//							  FRSV|OP| MASK|PAYLOAD LENGTH
 	uint8_t control_frame[6] = {0b10001000, 0b10000000, 0, 0, 0, 0};
-	send(wsfd, control_frame, 6, 0);
+	send(websocket->fd, control_frame, 6, 0);
+	websocket->connection = DISCONNECTED;
 }
 
-void ws_and_sock_close(int wsfd) {
-	ws_close(wsfd, "");
+void ws_and_sock_close(websocket_t* websocket) {
+	int wsfd = websocket->fd;
+	ws_close(websocket, "");
 	shutdown(wsfd, SHUT_RDWR);
 	close(wsfd);
 }
 
 //TODO: Change sockfd to ws struct
-void ws_send_message(int wsfd, const char* message) {
+void ws_send_message(websocket_t* websocket, const char* message) {
 	size_t length;
 
 	uint8_t* msg = generate_data_frame(TEXT_MESSAGE, (uint8_t*)message, strlen(message), &length, true);
@@ -67,17 +88,17 @@ void ws_send_message(int wsfd, const char* message) {
 //		printf("0x%X, ", (uint8_t)msg[i]);
 //	}
 //	printf("]\n");
-	send(wsfd, msg, length, 0);
+	send(websocket->fd, msg, length, 0);
 
 	free(msg);
 }
 
-void ws_send_binary(int wsfd, uint8_t* data, size_t len) {
+void ws_send_binary(websocket_t* websocket, uint8_t* data, size_t len) {
 	size_t length;
 
 	reverse_array(data, len);
 	uint8_t* send_data = generate_data_frame(BINARY_MESSAGE, data, len, &length, true);
-	send(wsfd, send_data, length, 0);
+	send(websocket->fd, send_data, length, 0);
 
 	free(send_data);
 }

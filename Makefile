@@ -4,7 +4,7 @@ CFLAGS = -g -Wall
 default: websocket
 
 websocket:  websocket.o
-	$(CC) -o websocket ./obj/websocket.o
+	$(CC) -pthread -o websocket ./obj/websocket.o
 
 ALLFLAGS = $(CFLAGS)
 websocket.o: ./src/websocket.c
