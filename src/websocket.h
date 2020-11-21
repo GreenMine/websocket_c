@@ -50,10 +50,10 @@ int ws_connect(websocket_t* websocket, const char* ip, const char* port) {
 	return 0;
 }
 
-void ws_hook_event(websocket_t* websocket, uint8_t event, void (*f)(char*)) {
+void ws_hook_event(websocket_t* websocket, uint8_t event, void (*f)(void*, websocket_t*)) {
 	switch(event) {
 		case NEW_MESSAGE:
-			websocket->new_message_hook = f;
+			websocket->new_message_hook = (void (*)(ws_data_t, websocket_t*))f;
 			break;
 		case CLOSE:
 			websocket->close_hook = f;

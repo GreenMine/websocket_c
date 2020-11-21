@@ -6,8 +6,8 @@
 #define MESSAGE_BUFFER_SIZE 132
 void *read_data(void* params) {
 	//Reading frames
-	websocket_t connection = *(websocket_t*)params;
-	int wsfd = connection.fd;
+	websocket_t* websocket = (websocket_t*)params;
+	int wsfd = websocket->fd;
 	char *buffer = alloca(MESSAGE_BUFFER_SIZE);
 	while(read(wsfd, buffer, MESSAGE_BUFFER_SIZE) != 0) {
 		uint8_t first_byte = buffer[0] - '0';
@@ -44,7 +44,8 @@ void *read_data(void* params) {
 					msg_len = need_read;
 				}
 
-				connection.new_message_hook(buffer + msg_offset);
+
+				websocket->new_message_hook((ws_data_t){msg_len, buffer + msg_offset, TEXT_MESSAGE}, websocket);
 //				printf("Response(%ldc.): %.*s\n", msg_len, msg_len, buffer + msg_offset);
 //				printf("Response: [");
 //				for(int i = 0; i < msg_len + msg_offset; i++)
@@ -73,7 +74,7 @@ void *read_data(void* params) {
 	}
 
 CLOSE_SOCKET:
-	ws_and_sock_close(&connection);
+	ws_and_sock_close(websocket);
 
 	return 0;
 }
