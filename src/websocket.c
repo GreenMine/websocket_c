@@ -31,7 +31,6 @@ int main(int argc, char *args[]) {
 	while(websocket.connection == CONNECTED) {
 		char buffer[64];
 		scanf("%s[^\n]", buffer);
-		printf("You write: %s\n", buffer);
 		ws_send_message(&websocket, buffer);
 	}
 

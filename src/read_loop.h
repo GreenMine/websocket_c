@@ -8,55 +8,52 @@ void *read_data(void* params) {
 	//Reading frames
 	websocket_t* websocket = (websocket_t*)params;
 	int wsfd = websocket->fd;
-	char *buffer = alloca(MESSAGE_BUFFER_SIZE);
-	while(read(wsfd, buffer, MESSAGE_BUFFER_SIZE) != 0) {
+	uint8_t buffer[16];
+	while(read(wsfd, buffer, 2) != 0) {
 		uint8_t first_byte = buffer[0] - '0';
-		size_t msg_len;
+		size_t msg_len = buffer[1] & 0x7F;
+		char* msg;
+		bool is_allocated = false;
 		switch(first_byte & 0xF) {
 			case TEXT_MESSAGE:
-				msg_len = buffer[1] & 0x7F;
-				size_t msg_offset = 2;
-
-				if(buffer[1] & 0x80) msg_offset += 4;
+				//Mask get
 				if(msg_len > 125) {
 					size_t need_read;
 					if(msg_len == 126) {
-						reverse_array(buffer + 2, 2);
-						need_read = *(uint16_t*)(buffer + 2);
-						msg_offset += 2;
+						read(wsfd, buffer, 2);
+						reverse_array(buffer, 2);
+						need_read = *(uint16_t*)buffer;
 					} else {
-						reverse_array(buffer + 2, 8);
-						need_read = *(uint64_t*)(buffer + 2);
-						msg_offset += 8;
+						read(wsfd, buffer, 8);
+						reverse_array(buffer, 8);
+						need_read = *(uint64_t*)buffer;
 					}
 
-					printf("Need read: %ld, offset: %ld\n", need_read, msg_offset);
-					size_t n = need_read + msg_offset;
-					char *big_msg = malloc(n);
-					memcpy(big_msg, buffer, MESSAGE_BUFFER_SIZE);
-					size_t s_readed = MESSAGE_BUFFER_SIZE;
-					while(s_readed < n) {
-						size_t readed = read(wsfd, big_msg + s_readed, n - s_readed);
+					printf("Need read: %ld\n", need_read);
+					size_t s_readed = 0;
+					msg = malloc(need_read + 1);
+					while(s_readed < need_read) {
+						size_t readed = read(wsfd, msg + s_readed, need_read - s_readed);
 						s_readed += readed;
-						printf("Readed: %ld/%ld\n", s_readed, n);
+						printf("Readed: %ld/%ld\n", s_readed, need_read);
 					}
-					buffer = big_msg;
 					msg_len = need_read;
+					is_allocated = true;
+				} else {
+					msg = alloca(msg_len + 1);
+					read(wsfd, msg, msg_len);
 				}
-
-
-				websocket->new_message_hook((ws_data_t){msg_len, buffer + msg_offset, TEXT_MESSAGE}, websocket);
-//				printf("Response(%ldc.): %.*s\n", msg_len, msg_len, buffer + msg_offset);
-//				printf("Response: [");
-//				for(int i = 0; i < msg_len + msg_offset; i++)
-//					printf("0x%X, ", (uint8_t)buffer[i]);
-//				printf("]\n");
+				msg[msg_len] = '\0';
+				websocket->new_message_hook((ws_data_t){msg_len, msg, TEXT_MESSAGE}, websocket);
+				if(is_allocated)
+					free(msg);
 			break;
 			case BINARY_MESSAGE:
 				printf("Umimplemented binary data!\n");
 			break;
 			case CLOSE_CONNECTION:
 				printf("Server closed the connection!\n");
+				websocket->close_hook((ws_data_t){}, websocket);
 				goto CLOSE_SOCKET;
 			break;
 			case PING:
@@ -74,7 +71,7 @@ void *read_data(void* params) {
 	}
 
 CLOSE_SOCKET:
-	ws_and_sock_close(websocket);
+	ws_and_service_close(websocket);
 
 	return 0;
 }

@@ -3,7 +3,8 @@
 typedef struct websocket {
 	int fd;
 	uint8_t connection;
+	pthread_t pthread;
 	void (*new_message_hook)(ws_data_t, struct websocket*);
-	void 	   (*close_hook)(char*);
+	void	   (*close_hook)(ws_data_t, struct websocket*);
 } websocket_t;
 #endif

@@ -44,8 +44,7 @@ int ws_connect(websocket_t* websocket, const char* ip, const char* port) {
 	websocket->connection = CONNECTED;
 
 	//Thread to read messages
-	pthread_t tid;
-	pthread_create(&tid, NULL, read_data, websocket);
+	pthread_create(&websocket->pthread, NULL, read_data, websocket);
 
 	return 0;
 }
@@ -56,7 +55,7 @@ void ws_hook_event(websocket_t* websocket, uint8_t event, void (*f)(void*, webso
 			websocket->new_message_hook = (void (*)(ws_data_t, websocket_t*))f;
 			break;
 		case CLOSE:
-			websocket->close_hook = f;
+			websocket->close_hook = (void (*)(ws_data_t, websocket_t*))f;
 			break;
 	}
 }
@@ -70,11 +69,15 @@ void ws_close(websocket_t* websocket, const char* message) {
 	websocket->connection = DISCONNECTED;
 }
 
-void ws_and_sock_close(websocket_t* websocket) {
+void ws_and_service_close(websocket_t* websocket) {
 	int wsfd = websocket->fd;
 	ws_close(websocket, "");
+
+	//Service close
 	shutdown(wsfd, SHUT_RDWR);
 	close(wsfd);
+
+	pthread_cancel(websocket->pthread);
 }
 
 //TODO: Change sockfd to ws struct
