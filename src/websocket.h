@@ -40,6 +40,8 @@ int ws_connect(websocket_t* websocket, const char* ip, const char* port) {
 	read(sockfd, header_res, HEADER_BUFFER_SIZE);
 	printf("Connection output: %s\n", header_res);
 
+	if(websocket->open_hook != NULL) websocket->open_hook(websocket);
+
 	websocket->fd = sockfd;
 	websocket->connection = CONNECTED;
 
@@ -49,16 +51,9 @@ int ws_connect(websocket_t* websocket, const char* ip, const char* port) {
 	return 0;
 }
 
-void ws_hook_event(websocket_t* websocket, uint8_t event, void (*f)(void*, websocket_t*)) {
-	switch(event) {
-		case NEW_MESSAGE:
-			websocket->new_message_hook = (void (*)(ws_data_t, websocket_t*))f;
-			break;
-		case CLOSE:
-			websocket->close_hook = (void (*)(ws_data_t, websocket_t*))f;
-			break;
-	}
-}
+void ws_hook_new_message(websocket_t* websocket, void (*f)(ws_data_t, websocket_t*)) {websocket->new_message_hook = f;}
+void			 ws_hook_close(websocket_t* websocket, void (*f)(ws_data_t, websocket_t*)) {websocket->close_hook = f;}
+void						  ws_hook_open(websocket_t* websocket, void (*f)(websocket_t*)) {websocket->open_hook = f;}
 
 void ws_close(websocket_t* websocket, const char* message) {
 	//Close the connection

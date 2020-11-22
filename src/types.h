@@ -16,5 +16,6 @@
 //EVENT TYPES
 #define NEW_MESSAGE 	 0x1
 #define CLOSE			 0x2
+#define CONNECT			 0x3
 
 #endif

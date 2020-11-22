@@ -6,5 +6,6 @@ typedef struct websocket {
 	pthread_t pthread;
 	void (*new_message_hook)(ws_data_t, struct websocket*);
 	void	   (*close_hook)(ws_data_t, struct websocket*);
+	void				   (*open_hook)(struct websocket*);
 } websocket_t;
 #endif
