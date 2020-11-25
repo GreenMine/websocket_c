@@ -1,5 +1,5 @@
-#ifndef GENERATOR_H
-#define GENERATOR_H
+#include "generator.h"
+
 uint8_t* generate_data_frame(uint8_t flag, uint8_t* data, size_t data_len, size_t* ret_len, bool mask) {
 	//FRSV|OP| MASK|PAYLOAD LENGTH
 	uint8_t *return_frame = malloc(data_len + 14);
@@ -38,4 +38,3 @@ uint8_t* generate_data_frame(uint8_t flag, uint8_t* data, size_t data_len, size_
 	*ret_len = data_len + data_offset;
 	return return_frame;
 }
-#endif

@@ -1,5 +1,4 @@
-#ifndef HELPER_H
-#define HELPER_H
+#include "helper.h"
 void reverse_array(void* array, size_t length) {
 	uint8_t* ptr = (uint8_t*)array;
 	for(int i = 0; i < length / 2; i++) {
@@ -15,4 +14,3 @@ void mask_data(uint8_t* data, size_t data_len, uint32_t key) {
 		data[i] ^= ((uint8_t*)&key)[key_octet_j];
 	}
 }
-#endif

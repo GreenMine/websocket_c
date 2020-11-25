@@ -1,20 +1,5 @@
 #include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <pthread.h>
-
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-
-
-#include "hook.h"
-#include "websocket_struct.h"
-#include "types.h"
-#include "helper.h"
-
-#include "websocket.h"
-#include "read_loop.h"
+#include "websocket/websocket.h"
 
 void handle_message(ws_data_t data, websocket_t* websocket);
 void open(websocket_t* websocket);
