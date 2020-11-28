@@ -11,11 +11,13 @@ int main(int argc, char *args[]) {
 	ws_hook_new_message(&websocket, handle_message);
 	ws_hook_open(&websocket, open);
 
-	if(ws_connect(&websocket, "localhost", "80") == -1) {
+	if(ws_connect(&websocket, "localhost", 80) == -1) {
 		printf("Error occured. Exiting...\n");
 		return -1;
 	}
 
+//	uint8_t buffer[64];
+//	ws_send_binary(&websocket, buffer, 64);
 	while(websocket.connection == CONNECTED) {
 		char buffer[64];
 		scanf("%s[^\n]", buffer);

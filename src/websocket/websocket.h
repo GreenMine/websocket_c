@@ -1,7 +1,6 @@
 #ifndef WEBSOCKET_H
 #define WEBSOCKET_H
 
-#include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -18,18 +17,18 @@
 
 #include "generator.h"
 
-#define HEADER_BUFFER_SIZE 256
+#define HEADER_BUFFER_SIZE 1
 
 void ws_hook_new_message(websocket_t* websocket, void (*f)(ws_data_t, websocket_t*));
-void			 ws_hook_close(websocket_t* websocket, void (*f)(ws_data_t, websocket_t*));
-void						  ws_hook_open(websocket_t* websocket, void (*f)(websocket_t*));
+void 	   ws_hook_close(websocket_t* websocket, void (*f)(ws_data_t, websocket_t*));
+void 				   ws_hook_open(websocket_t* websocket, void (*f)(websocket_t*));
 
 void *read_data(void* params);
 
-int ws_connect(websocket_t* websocket, const char* ip, const char* port);
+int ws_connect(websocket_t* websocket, const char* ip, size_t port);
 void ws_close(websocket_t* websocket, const char* message);
 void ws_and_service_close(websocket_t* websocket);
-//TODO: Change sockfd to ws struct
+void service_close(websocket_t* websocket);
 void ws_send_message(websocket_t* websocket, const char* message);
 void ws_send_binary(websocket_t* websocket, uint8_t* data, size_t len);
 #endif
