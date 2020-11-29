@@ -16,6 +16,7 @@ int ws_connect(websocket_t* websocket, const char* ip, size_t p) {
 
 	getaddrinfo(ip, port, &hint, &res);
 
+	if(res == NULL) return -1;
 	int sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	printf("Try to connect...\n");
 	if(connect(sockfd, res->ai_addr, res->ai_addrlen) == -1) {
@@ -100,9 +101,11 @@ void ws_send_binary(websocket_t* websocket, uint8_t* data, size_t len) {
 
 	reverse_array(data, len);
 	uint8_t* send_data = generate_data_frame(BINARY_MESSAGE, data, len, &length, true);
+	printf("Sended from ws_send_binary: [");
 	for(int i = 0; i < length; i++) {
 		printf("0x%X, ", send_data[i]);
 	}
+	printf("]\n");
 	send(websocket->fd, send_data, length, 0);
 
 	free(send_data);
