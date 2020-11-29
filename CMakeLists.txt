@@ -29,5 +29,12 @@ add_executable(main ${SOURCE_EXE})
 
 find_package (Threads)
 
-target_link_libraries(websocket ${CMAKE_THREAD_LIBS_INIT})
+find_package(OpenSSL REQUIRED)
+#message("OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
+#message("OpenSSL libraries: ${OPENSSL_LIBRARIES}")
+include_directories(${OPENSSL_INCLUDE_DIR})
+
+target_link_libraries(websocket
+	${CMAKE_THREAD_LIBS_INIT}
+	${OPENSSL_LIBRARIES})
 target_link_libraries(main websocket)

@@ -5,17 +5,17 @@
 void read_message(websocket_t* websocket, size_t data_len, uint8_t type) {
 	bool is_allocated = false;
 	//Mask get
-	int wsfd = websocket->fd;
+	CONN_TYPE conn = websocket->conn;
 	uint8_t* data;
 	if(data_len > 125) {
 		size_t need_read;
 		uint8_t buffer[8];
 		if(data_len == 126) {
-			read(wsfd, buffer, 2);
+			READ(conn, buffer, 2);
 			reverse_array(buffer, 2);
 			need_read = *(uint16_t*)buffer;
 		} else {
-			read(wsfd, buffer, 8);
+			READ(conn, buffer, 8);
 			reverse_array(buffer, 8);
 			need_read = *(uint64_t*)buffer;
 		}
@@ -24,7 +24,7 @@ void read_message(websocket_t* websocket, size_t data_len, uint8_t type) {
 		size_t s_readed = 0;
 		data = malloc(need_read + 1);
 		while(s_readed < need_read) {
-			size_t readed = read(wsfd, data + s_readed, need_read - s_readed);
+			size_t readed = READ(conn, data + s_readed, need_read - s_readed);
 			s_readed += readed;
 			printf("Readed: %ld/%ld\n", s_readed, need_read);
 		}
@@ -32,7 +32,7 @@ void read_message(websocket_t* websocket, size_t data_len, uint8_t type) {
 		is_allocated = true;
 	} else {
 		data = alloca(data_len + 1);
-		read(wsfd, data, data_len);
+		READ(conn, data, data_len);
 	}
 	data[data_len] = '\0';
 	if(websocket->new_message_hook) websocket->new_message_hook((ws_data_t){data, data_len, type}, websocket);
@@ -42,9 +42,9 @@ void read_message(websocket_t* websocket, size_t data_len, uint8_t type) {
 void *read_data(void* params) {
 	//Reading frames
 	websocket_t* websocket = (websocket_t*)params;
-	int wsfd = websocket->fd;
+	CONN_TYPE conn = websocket->conn;
 	uint8_t buffer[16];
-	while(read(wsfd, buffer, 2) != 0) {
+	while(READ(conn, buffer, 2) != 0) {
 		uint8_t first_byte = buffer[0] - '0';
 		size_t msg_len = buffer[1] & 0x7F;
 		switch(first_byte & 0xF) {
@@ -62,7 +62,7 @@ void *read_data(void* params) {
 			case PING:
 				printf("Ping from server. Respond...\n");
 				uint8_t control_frame[6] = {0b10001010, 0b10000000, 0, 0, 0, 0};
-				send(wsfd, control_frame, 6, 0);
+				SEND(conn, control_frame, 6);
 			break;
 			case PONG:
 				printf("Pong!\n");

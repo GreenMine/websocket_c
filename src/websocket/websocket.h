@@ -1,6 +1,18 @@
 #ifndef WEBSOCKET_H
 #define WEBSOCKET_H
 
+#define SSL_CONN
+
+#ifdef SSL_CONN
+#define CONN_TYPE SSL*
+#define SEND(conn, buf, buf_len) SSL_write(conn, buf, buf_len)
+#define READ(conn, buf, buf_len) SSL_read(conn, buf, buf_len)
+#else
+#define CONN_TYPE int
+#define SEND(sockfd, buf, buf_len) send(sockfd, buf, buf_len, 0)
+#define READ(sockfd, buf, buf_len) read(sockfd, buf, buf_len)
+#endif
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -9,6 +21,7 @@
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <openssl/ssl.h>
 
 #include "hook.h"
 #include "websocket_struct.h"

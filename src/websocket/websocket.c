@@ -24,10 +24,29 @@ int ws_connect(websocket_t* websocket, const char* ip, size_t p) {
 		return -1;
 	}
 	printf("Success connected!\n");
+
+#ifdef SSL_CONN
+	printf("Create SSL connection\n");
+	SSL_load_error_strings ();
+	SSL_library_init ();
+	SSL_CTX *ssl_ctx = SSL_CTX_new (SSLv23_client_method ());
+
+	SSL *conn = SSL_new(ssl_ctx);
+	SSL_set_fd(conn, sockfd);
+
+	int err = SSL_connect(conn);
+	if (err != 1)
+		abort(); // handle error
+	printf("SSL connection success created!\n");
+#else
+	int conn = sockfd;
+#endif
+
+	printf("Length of defined type: %ld\n", sizeof(CONN_TYPE));
 	//Send handshake request
 	char header[256];
-	int strlen = sprintf(header, "GET ws://%s:%s/ HTTP/1.1\r\nHost: %s\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: ZMOruJy3LW4qZvJEP55dBg==\r\n\r\n", ip, port, ip);//TODO: Make dynamic WebSocket key generator
-	if(send(sockfd, header, strlen, 0) != strlen) {
+	int strlen = sprintf(header, "GET wss://%s:%s/ HTTP/1.1\r\nHost: %s\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: ZMOruJy3LW4qZvJEP55dBg==\r\n\r\n", ip, port, ip);//TODO: Make dynamic WebSocket key generator
+	if(SEND(conn, header, strlen) != strlen) {
 		printf("Sended bytes not equal own message!\n");
 		return -1;
 	}
@@ -38,7 +57,8 @@ int ws_connect(websocket_t* websocket, const char* ip, size_t p) {
 	int concurrency = 0;
 	const char* expected = "\r\n\r\n";
 	do {
-		read(sockfd, &header_res, 1);
+		READ(conn, &header_res, 1);
+		putchar(header_res);
 		if(header_res == expected[concurrency]) {
 			concurrency++;
 		} else {
@@ -48,7 +68,7 @@ int ws_connect(websocket_t* websocket, const char* ip, size_t p) {
 
 	if(websocket->open_hook) websocket->open_hook(websocket);
 
-	websocket->fd = sockfd;
+	websocket->conn = conn;
 	websocket->connection = CONNECTED;
 
 	//Thread to read messages
@@ -62,11 +82,11 @@ void ws_close(websocket_t* websocket, const char* message) {
 	//0000 1000 1000 0000
 	//							  FRSV|OP| MASK|PAYLOAD LENGTH
 	uint8_t control_frame[6] = {0b10001000, 0b10000000, 0, 0, 0, 0};
-	send(websocket->fd, control_frame, 6, 0);
+	SEND(websocket->conn, control_frame, 6);
 }
 
 void service_close(websocket_t* websocket) {
-	int wsfd = websocket->fd;
+	CONN_TYPE conn = websocket->conn;
 	websocket->connection = DISCONNECTED;
 	if(websocket->close_hook) {
 		char* msg = "Closed from code!";
@@ -74,8 +94,14 @@ void service_close(websocket_t* websocket) {
 	}
 
 	//Service close
-	shutdown(wsfd, SHUT_RDWR);
-	close(wsfd);
+#ifdef SSL_CONN
+	SSL_shutdown(conn);
+	SSL_free(conn);
+	//FIXME: Close socket!
+#else
+	shutdown(conn, SHUT_RDWR);
+	close(conn);
+#endif
 
 	pthread_cancel(websocket->pthread);
 
@@ -91,7 +117,7 @@ void ws_send_message(websocket_t* websocket, const char* message) {
 //		printf("0x%X, ", (uint8_t)msg[i]);
 //	}
 //	printf("]\n");
-	send(websocket->fd, msg, length, 0);
+	SEND(websocket->conn, msg, length);
 
 	free(msg);
 }
@@ -106,7 +132,7 @@ void ws_send_binary(websocket_t* websocket, uint8_t* data, size_t len) {
 		printf("0x%X, ", send_data[i]);
 	}
 	printf("]\n");
-	send(websocket->fd, send_data, length, 0);
+	SEND(websocket->conn, send_data, length);
 
 	free(send_data);
 }
