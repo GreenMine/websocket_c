@@ -21,7 +21,9 @@
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#ifdef SSL_CONN
 #include <openssl/ssl.h>
+#endif
 
 #include "hook.h"
 #include "websocket_struct.h"

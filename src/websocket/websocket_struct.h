@@ -1,9 +1,7 @@
 #ifndef WEBSOCKET_STRUCT_H
 #define WEBSOCKET_STRUCT_H
 typedef struct websocket {
-#ifdef SSL_CONN
-	SSL* conn;
-#endif
+	CONN_TYPE conn;
 	uint8_t connection;
 	pthread_t pthread;
 	void (*new_message_hook)(ws_data_t, struct websocket*);
