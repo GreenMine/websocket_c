@@ -25,7 +25,7 @@ int ws_connect(websocket_t* websocket, const char* ip, size_t p) {
 	}
 	printf("Success connected!\n");
 
-#ifdef SSL_CONN
+#if SSL_CONN==1
 	printf("Create SSL connection\n");
 	SSL_load_error_strings ();
 	SSL_library_init ();
@@ -35,8 +35,15 @@ int ws_connect(websocket_t* websocket, const char* ip, size_t p) {
 	SSL_set_fd(conn, sockfd);
 
 	int err = SSL_connect(conn);
-	if (err != 1)
-		abort(); // handle error
+	if (err != 1) {
+		BIO *bio = BIO_new(BIO_s_mem());
+		ERR_print_errors(bio);
+		char *buf;
+		size_t len = BIO_get_mem_data(bio, &buf);
+		printf("%s\n", buf);
+		BIO_free(bio);
+		return -1;
+	}
 	printf("SSL connection success created!\n");
 #else
 	int conn = sockfd;
@@ -66,10 +73,11 @@ int ws_connect(websocket_t* websocket, const char* ip, size_t p) {
 		}
 	} while(concurrency < 4);
 
-	if(websocket->open_hook) websocket->open_hook(websocket);
 
 	websocket->conn = conn;
 	websocket->connection = CONNECTED;
+
+	if(websocket->open_hook) websocket->open_hook(websocket);
 
 	//Thread to read messages
 	pthread_create(&websocket->pthread, NULL, read_data, websocket);
@@ -77,13 +85,15 @@ int ws_connect(websocket_t* websocket, const char* ip, size_t p) {
 	return 0;
 }
 
-void ws_close(websocket_t* websocket, const char* message) {
-	//Close the connection
-	//0000 1000 1000 0000
+void send_control_frame(websocket_t* websocket, uint8_t frame) {
 	//							  FRSV|OP| MASK|PAYLOAD LENGTH
-	uint8_t control_frame[6] = {0b10001000, 0b10000000, 0, 0, 0, 0};
+	uint8_t control_frame[6] = {0x80 | frame, 0x80, 0, 0, 0, 0};
 	SEND(websocket->conn, control_frame, 6);
 }
+
+void ws_close(websocket_t* websocket, const char* _message) { send_control_frame(websocket, CLOSE_CONNECTION); }
+void ws_pong(websocket_t* websocket) { send_control_frame(websocket, PONG); }
+void ws_ping(websocket_t* websocket) { send_control_frame(websocket, PING); }
 
 void service_close(websocket_t* websocket) {
 	CONN_TYPE conn = websocket->conn;
@@ -94,7 +104,7 @@ void service_close(websocket_t* websocket) {
 	}
 
 	//Service close
-#ifdef SSL_CONN
+#if SSL_CONN==1
 	SSL_shutdown(conn);
 	SSL_free(conn);
 	//FIXME: Close socket!

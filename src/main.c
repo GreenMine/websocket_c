@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <time.h>
+#include <errno.h>
 
 #include "websocket/websocket.h"
 
@@ -18,19 +19,20 @@ int main(int argc, char *args[]) {
 		printf("Error occured. Exiting...\n");
 		return -1;
 	}
-
 	uint8_t buffer[16];
 	for(int i = 0; i < 16; i++)
 		buffer[i] = rand();
 	ws_send_binary(&websocket, buffer, 16);
+	char str_buf[64];
 	while(websocket.connection == CONNECTED) {
-		char buffer[64];
-		scanf("%s[^\n]", buffer);
-		ws_send_message(&websocket, buffer);
+		scanf("%s[^\n]", str_buf);
+		ws_send_message(&websocket, str_buf);
+		ws_ping(&websocket);
 	}
 
 	return 0;
 }
+
 void open(websocket_t* websocket) {
 	printf("Successfuly connected!\n");
 }

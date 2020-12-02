@@ -1,0 +1,1 @@
+#define SSL_CONN @SSL_CONNECTION@

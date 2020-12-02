@@ -4,7 +4,6 @@
 #define MESSAGE_BUFFER_SIZE 132
 void read_message(websocket_t* websocket, size_t data_len, uint8_t type) {
 	bool is_allocated = false;
-	//Mask get
 	CONN_TYPE conn = websocket->conn;
 	uint8_t* data;
 	if(data_len > 125) {
@@ -40,10 +39,10 @@ void read_message(websocket_t* websocket, size_t data_len, uint8_t type) {
 		free(data);
 }
 void *read_data(void* params) {
-	//Reading frames
 	websocket_t* websocket = (websocket_t*)params;
 	CONN_TYPE conn = websocket->conn;
-	uint8_t buffer[16];
+	uint8_t buffer[2];
+	//Reading frames
 	while(READ(conn, buffer, 2) != 0) {
 		uint8_t first_byte = buffer[0] - '0';
 		size_t msg_len = buffer[1] & 0x7F;
@@ -55,28 +54,25 @@ void *read_data(void* params) {
 				read_message(websocket, msg_len, BINARY_MESSAGE);
 			break;
 			case CLOSE_CONNECTION:
-				if(websocket->close_hook) websocket->close_hook((ws_data_t){}, websocket);
-				websocket->connection = DISCONNECTED;
 				goto CLOSE_SOCKET;
 			break;
 			case PING:
 				printf("Ping from server. Respond...\n");
-				uint8_t control_frame[6] = {0b10001010, 0b10000000, 0, 0, 0, 0};
-				SEND(conn, control_frame, 6);
+				ws_pong(websocket);
 			break;
 			case PONG:
 				printf("Pong!\n");
 			break;
 			default:
 				printf("Not implemented frame! %s.\n", buffer);
+				goto CLOSE_SOCKET;
 			break;
 		}
 	}
 
 CLOSE_SOCKET:
+	printf("Close the connection...");
 	ws_close(websocket, "");
 	service_close(websocket);
-
-	return 0;
 }
 #endif

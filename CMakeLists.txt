@@ -2,10 +2,19 @@ cmake_minimum_required(VERSION 2.8)
 
 project(websocket_c)
 
+
 set(EXE_DIR build/)
 SET(SOURCE_DIR src/)
 set(SOURCE_EXE ${SOURCE_DIR}main.c)
 set(websocket_SOURCE_DIR ${SOURCE_DIR}websocket/)
+
+set(SSL_CONNECTION 1)
+
+# config for program
+configure_file(
+	        "${PROJECT_SOURCE_DIR}/cmake/config.h.in"
+			"${websocket_SOURCE_DIR}/config.h"
+)
 
 set(websocket_SOURCE
 	${websocket_SOURCE_DIR}helper.c

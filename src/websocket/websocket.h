@@ -1,9 +1,8 @@
 #ifndef WEBSOCKET_H
 #define WEBSOCKET_H
 
-#define SSL_CONN
-
-#ifdef SSL_CONN
+#include "config.h"
+#if SSL_CONN==1
 #define CONN_TYPE SSL*
 #define SEND(conn, buf, buf_len) SSL_write(conn, buf, buf_len)
 #define READ(conn, buf, buf_len) SSL_read(conn, buf, buf_len)
@@ -21,8 +20,9 @@
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#ifdef SSL_CONN
+#if SSL_CONN==1
 #include <openssl/ssl.h>
+#include <openssl/err.h>
 #endif
 
 #include "hook.h"
@@ -41,9 +41,13 @@ void 				   ws_hook_open(websocket_t* websocket, void (*f)(websocket_t*));
 void *read_data(void* params);
 
 int ws_connect(websocket_t* websocket, const char* ip, size_t port);
-void ws_close(websocket_t* websocket, const char* message);
-void ws_and_service_close(websocket_t* websocket);
-void service_close(websocket_t* websocket);
+
+void ws_close(websocket_t* websocket, const char* _message);
+void ws_pong(websocket_t* websocket);
+void ws_ping(websocket_t* websocket);
 void ws_send_message(websocket_t* websocket, const char* message);
 void ws_send_binary(websocket_t* websocket, uint8_t* data, size_t len);
+
+void ws_and_service_close(websocket_t* websocket);
+void service_close(websocket_t* websocket);
 #endif
