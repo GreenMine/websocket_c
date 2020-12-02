@@ -56,17 +56,6 @@ CMAKE_BINARY_DIR = /home/xladomaz/Desktop/projects/websocket_c
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target rebuild_cache
-rebuild_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : rebuild_cache
-
-# Special rule for the target rebuild_cache
-rebuild_cache/fast: rebuild_cache
-
-.PHONY : rebuild_cache/fast
-
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
@@ -77,6 +66,17 @@ edit_cache:
 edit_cache/fast: edit_cache
 
 .PHONY : edit_cache/fast
+
+# Special rule for the target rebuild_cache
+rebuild_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	/usr/bin/cmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : rebuild_cache
+
+# Special rule for the target rebuild_cache
+rebuild_cache/fast: rebuild_cache
+
+.PHONY : rebuild_cache/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -111,17 +111,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named main
+# Target rules for targets named websocket_test
 
 # Build rule for target.
-main: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 main
-.PHONY : main
+websocket_test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 websocket_test
+.PHONY : websocket_test
 
 # fast build rule for target.
-main/fast:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
-.PHONY : main/fast
+websocket_test/fast:
+	$(MAKE) -f CMakeFiles/websocket_test.dir/build.make CMakeFiles/websocket_test.dir/build
+.PHONY : websocket_test/fast
 
 #=============================================================================
 # Target rules for targets named websocket
@@ -136,113 +136,113 @@ websocket/fast:
 	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/build
 .PHONY : websocket/fast
 
-src/main.o: src/main.c.o
+src/generator.o: src/generator.c.o
 
-.PHONY : src/main.o
-
-# target to build an object file
-src/main.c.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/main.c.o
-.PHONY : src/main.c.o
-
-src/main.i: src/main.c.i
-
-.PHONY : src/main.i
-
-# target to preprocess a source file
-src/main.c.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/main.c.i
-.PHONY : src/main.c.i
-
-src/main.s: src/main.c.s
-
-.PHONY : src/main.s
-
-# target to generate assembly for a file
-src/main.c.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/main.c.s
-.PHONY : src/main.c.s
-
-src/websocket/generator.o: src/websocket/generator.c.o
-
-.PHONY : src/websocket/generator.o
+.PHONY : src/generator.o
 
 # target to build an object file
-src/websocket/generator.c.o:
-	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/websocket/generator.c.o
-.PHONY : src/websocket/generator.c.o
+src/generator.c.o:
+	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/generator.c.o
+.PHONY : src/generator.c.o
 
-src/websocket/generator.i: src/websocket/generator.c.i
+src/generator.i: src/generator.c.i
 
-.PHONY : src/websocket/generator.i
+.PHONY : src/generator.i
 
 # target to preprocess a source file
-src/websocket/generator.c.i:
-	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/websocket/generator.c.i
-.PHONY : src/websocket/generator.c.i
+src/generator.c.i:
+	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/generator.c.i
+.PHONY : src/generator.c.i
 
-src/websocket/generator.s: src/websocket/generator.c.s
+src/generator.s: src/generator.c.s
 
-.PHONY : src/websocket/generator.s
+.PHONY : src/generator.s
 
 # target to generate assembly for a file
-src/websocket/generator.c.s:
-	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/websocket/generator.c.s
-.PHONY : src/websocket/generator.c.s
+src/generator.c.s:
+	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/generator.c.s
+.PHONY : src/generator.c.s
 
-src/websocket/helper.o: src/websocket/helper.c.o
+src/helper.o: src/helper.c.o
 
-.PHONY : src/websocket/helper.o
+.PHONY : src/helper.o
 
 # target to build an object file
-src/websocket/helper.c.o:
-	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/websocket/helper.c.o
-.PHONY : src/websocket/helper.c.o
+src/helper.c.o:
+	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/helper.c.o
+.PHONY : src/helper.c.o
 
-src/websocket/helper.i: src/websocket/helper.c.i
+src/helper.i: src/helper.c.i
 
-.PHONY : src/websocket/helper.i
+.PHONY : src/helper.i
 
 # target to preprocess a source file
-src/websocket/helper.c.i:
-	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/websocket/helper.c.i
-.PHONY : src/websocket/helper.c.i
+src/helper.c.i:
+	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/helper.c.i
+.PHONY : src/helper.c.i
 
-src/websocket/helper.s: src/websocket/helper.c.s
+src/helper.s: src/helper.c.s
 
-.PHONY : src/websocket/helper.s
+.PHONY : src/helper.s
 
 # target to generate assembly for a file
-src/websocket/helper.c.s:
-	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/websocket/helper.c.s
-.PHONY : src/websocket/helper.c.s
+src/helper.c.s:
+	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/helper.c.s
+.PHONY : src/helper.c.s
 
-src/websocket/websocket.o: src/websocket/websocket.c.o
+src/websocket.o: src/websocket.c.o
 
-.PHONY : src/websocket/websocket.o
+.PHONY : src/websocket.o
 
 # target to build an object file
-src/websocket/websocket.c.o:
-	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/websocket/websocket.c.o
-.PHONY : src/websocket/websocket.c.o
+src/websocket.c.o:
+	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/websocket.c.o
+.PHONY : src/websocket.c.o
 
-src/websocket/websocket.i: src/websocket/websocket.c.i
+src/websocket.i: src/websocket.c.i
 
-.PHONY : src/websocket/websocket.i
+.PHONY : src/websocket.i
 
 # target to preprocess a source file
-src/websocket/websocket.c.i:
-	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/websocket/websocket.c.i
-.PHONY : src/websocket/websocket.c.i
+src/websocket.c.i:
+	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/websocket.c.i
+.PHONY : src/websocket.c.i
 
-src/websocket/websocket.s: src/websocket/websocket.c.s
+src/websocket.s: src/websocket.c.s
 
-.PHONY : src/websocket/websocket.s
+.PHONY : src/websocket.s
 
 # target to generate assembly for a file
-src/websocket/websocket.c.s:
-	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/websocket/websocket.c.s
-.PHONY : src/websocket/websocket.c.s
+src/websocket.c.s:
+	$(MAKE) -f CMakeFiles/websocket.dir/build.make CMakeFiles/websocket.dir/src/websocket.c.s
+.PHONY : src/websocket.c.s
+
+tests/main.o: tests/main.c.o
+
+.PHONY : tests/main.o
+
+# target to build an object file
+tests/main.c.o:
+	$(MAKE) -f CMakeFiles/websocket_test.dir/build.make CMakeFiles/websocket_test.dir/tests/main.c.o
+.PHONY : tests/main.c.o
+
+tests/main.i: tests/main.c.i
+
+.PHONY : tests/main.i
+
+# target to preprocess a source file
+tests/main.c.i:
+	$(MAKE) -f CMakeFiles/websocket_test.dir/build.make CMakeFiles/websocket_test.dir/tests/main.c.i
+.PHONY : tests/main.c.i
+
+tests/main.s: tests/main.c.s
+
+.PHONY : tests/main.s
+
+# target to generate assembly for a file
+tests/main.c.s:
+	$(MAKE) -f CMakeFiles/websocket_test.dir/build.make CMakeFiles/websocket_test.dir/tests/main.c.s
+.PHONY : tests/main.c.s
 
 # Help Target
 help:
@@ -250,22 +250,22 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... main"
+	@echo "... rebuild_cache"
+	@echo "... websocket_test"
 	@echo "... websocket"
-	@echo "... src/main.o"
-	@echo "... src/main.i"
-	@echo "... src/main.s"
-	@echo "... src/websocket/generator.o"
-	@echo "... src/websocket/generator.i"
-	@echo "... src/websocket/generator.s"
-	@echo "... src/websocket/helper.o"
-	@echo "... src/websocket/helper.i"
-	@echo "... src/websocket/helper.s"
-	@echo "... src/websocket/websocket.o"
-	@echo "... src/websocket/websocket.i"
-	@echo "... src/websocket/websocket.s"
+	@echo "... src/generator.o"
+	@echo "... src/generator.i"
+	@echo "... src/generator.s"
+	@echo "... src/helper.o"
+	@echo "... src/helper.i"
+	@echo "... src/helper.s"
+	@echo "... src/websocket.o"
+	@echo "... src/websocket.i"
+	@echo "... src/websocket.s"
+	@echo "... tests/main.o"
+	@echo "... tests/main.i"
+	@echo "... tests/main.s"
 .PHONY : help
 
 
